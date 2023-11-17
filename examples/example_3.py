@@ -1,8 +1,6 @@
 import rospy
 from ros_ht_msg.msg import ht_control
 
-
-
 def controlfunc(mode,x,y,z):
     control = ht_control()
     control.mode = mode
@@ -10,7 +8,6 @@ def controlfunc(mode,x,y,z):
     control.y = y
     control.z = z
     return control
-    
 
 if __name__ == "__main__":
     

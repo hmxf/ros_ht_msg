@@ -1,8 +1,6 @@
 import rospy
 from ros_ht_msg.msg import ht_control
 
-
-
 def controlfunc(mode,x,y,z):
     """
     指令转换
@@ -14,7 +12,6 @@ def controlfunc(mode,x,y,z):
     control.z = z
     return control
 
-
 def dopub(pub, time, control1,control2):    
     du_x = rospy.Duration(time)
     rospy.loginfo("第一次指令发送\n")
@@ -24,8 +21,6 @@ def dopub(pub, time, control1,control2):
     rospy.loginfo("第二次指令发送")
     pub.publish(control2)
     rospy.sleep(rospy.Duration(20))
-
-    
 
 if __name__ == "__main__":
     
@@ -38,7 +33,6 @@ if __name__ == "__main__":
 
     rospy.loginfo("实验一：同一指令间隔 1s 以上发送两次: \n")
     dopub(pub, 1.00, control_1,control_1)
-
 
     rospy.loginfo("实验二：同一指令间隔 50ms，发送两次：\n")
     dopub(pub, 0.05, control_1, control_1)
