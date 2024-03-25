@@ -55,6 +55,7 @@ add_message_files(
   ht_steering_motor.msg
   ht_system.msg
   ht_control.msg
+  control.msg
 #   Message1.msg
 #   Message2.msg
 )
