@@ -46,7 +46,10 @@ def callback_sub(msg):
 if __name__ == "__main__":
     
     rospy.init_node("pub_command")
-    sub = rospy.Subscriber("Control",control,callback_sub,queue_size=100)
     rospy.sleep(rospy.Duration(5))
+    sub = rospy.Subscriber("Control",control,callback_sub,queue_size=100)
+    rospy.spin()
+    
+    
 
     
