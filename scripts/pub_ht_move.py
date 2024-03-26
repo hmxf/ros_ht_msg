@@ -60,7 +60,7 @@ def pubTurnAround(time, pub, control):
 
 if __name__ == "__main__":
     
-    rospy.init_node("pub_command")
+    rospy.init_node("pub_command1")
     pub =  rospy.Publisher("/HT_Control", ht_control, queue_size=100)
     rospy.sleep(rospy.Duration(5))
 

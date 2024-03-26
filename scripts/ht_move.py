@@ -18,7 +18,7 @@ def command_sequence():
     """
 
 def get_time(p,s):
-    return (p*1000)/s
+    return int((p*1000)/s)
 
 # 接受命令的回调：
 def callback_sub(msg):
@@ -32,20 +32,20 @@ def callback_sub(msg):
     pub =  rospy.Publisher("/HT_Control", ht_control, queue_size=100)
     rate = rospy.Rate(1) # 1Hz
 
-    for count in range(get1):  
+    for count in range(gt1):  
         pub.publish(HTcontrolfunc(x=Speed))
-        rospy.loginfo("向 前/后 行进: mode:FTFD\n 速度:%d mm/s \n",Speed)
+        rospy.loginfo("第%d次: 向 前/后 行进: mode:FTFD\n 速度:%d mm/s \n",count+1,Speed)
         rate.sleep()  # 按照1Hz频率等待
 
     for count in range(gt2):  
         pub.publish(HTcontrolfunc(y=Speed))
-        rospy.loginfo("向 左/右 行进: mode:FTFD\n 速度:%d mm/s \n",Speed)
+        rospy.loginfo("第%d次: 向 左/右 行进: mode:FTFD\n 速度:%d mm/s \n",count+1,Speed)
         rate.sleep()  # 按照1Hz频率等待
 
 
 if __name__ == "__main__":
     
-    rospy.init_node("pub_command")
+    rospy.init_node("pub_command2")
     rospy.sleep(rospy.Duration(5))
     sub = rospy.Subscriber("Control",control,callback_sub,queue_size=100)
     rospy.spin()
