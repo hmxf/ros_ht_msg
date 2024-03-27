@@ -1,7 +1,7 @@
 import rospy
 from ros_ht_msg.msg import ht_control
 
-def HTcontrolfunc(mode = 1,x = 0,y = 0,z = 0):
+def HTcontrolfunc(mode=1, x=0, y=0, z=0):
     control = ht_control()
     control.mode = mode
     control.x = x
@@ -12,76 +12,68 @@ def HTcontrolfunc(mode = 1,x = 0,y = 0,z = 0):
 def dopub(pub, control):
     """
     指令发布
-    pub 发布端
-    control 命令指令
-    一次控制指令发布后会休眠 1s
+    pub: 发布端
+    control: 命令指令
+    发布一次控制指令后会休眠 1s
     """
-    rospy.loginfo("指令发送\n")
-    pub.publish(control)
+    try:
+        rospy.loginfo("指令发送\n")
+        pub.publish(control)
+    except Exception as e:
+        rospy.logerr(f"发布指令失败: {str(e)}")
+
     du_x = rospy.Duration(1)
     rospy.sleep(du_x)
 
-def pubMove(time, pub, control):
+def move(time, direction, speed, pub, control):
     """
-    控制底盘行进
-    行进方式：前进、后退、向左平移、向右平移
-    time 移动时间，指令需要按照每 1s 一次的频率发布
-    pub 发布实例
-    control 移动指令， 建议仅使用 x 和 y
+    控制底盘移动
+    direction: 移动方向（'forward', 'backward', 'left', 'right', 'rotate'）
+    time: 移动时间（单位：秒）
+    speed: 相应方向的速度
+    pub: 发布实例
+    control: 移动指令
     """
-    while time > 0:
+    directions_map = {
+        "forward": ("前", control.x),
+        "backward": ("后", -control.x),
+        "left": ("左", control.y),
+        "right": ("右", -control.y),
+        "rotate": ("旋转", control.z),
+    }
+    
+    for _ in range(time):
         dopub(pub, control)
-        mode = "FTFD(四轮四转)"
-        if control.x != 0:
-            if (control.x > 0):
-                towards = "前"
-            elif (control.x < 0):
-                towards = "后"
-            rospy.loginfo("向%s行进: mode 为 %s 速度 = %d mm/s ", towards, mode, control.x)
-        
-        if control.y != 0:
-            if (control.y > 0):
-                towards = "左"
-            elif (control.y < 0):
-                towards = "右"
-            rospy.loginfo("向%s行进: mode 为 %s 速度 = %d mm/s ", towards, mode, control.y)
-        
-        time -= 1
 
-def pubTurnAround(time, pub, control):
-    """
-    原地旋转的移动方式，参数同上
-    """
-    while time > 0:
-        dopub(pub, control)
+        if speed != 0:
+            direction_text, value = directions_map[direction]
+            rospy.loginfo(f"向{direction_text}行进: mode 为 FTFD(四轮四转)，速度 = {abs(value)} mm/s ")
+
+    if direction == "rotate":
         mode = "阿克曼/自转"
-        rospy.loginfo("原地旋转 180 度: mode 为 %s 速度 = %d degree/min", mode, control.z)
-        time -= 1
+        rospy.loginfo(f"原地{direction_text}: mode 为 {mode}，速度 = {value} degree/min")
 
 if __name__ == "__main__":
     
-    rospy.init_node("pub_command1")
-    pub =  rospy.Publisher("/HT_Control", ht_control, queue_size=100)
-    rospy.sleep(rospy.Duration(5))
+    try:
+        rospy.init_node("pub_command1")
+        pub = rospy.Publisher("/HT_Control", ht_control, queue_size=100)
+        rospy.sleep(rospy.Duration(5))
+    except rospy.ROSException as e:
+        rospy.logerr(f"初始化节点或创建发布者失败: {str(e)}")
 
-    # 前进指令：
-    control_forwards = HTcontrolfunc(1, 100)
+    # 创建指令对象
+    control_forwards = HTcontrolfunc(1, 100)  # 前进
+    control_left = HTcontrolfunc(1, y=100)     # 左平移
+    control_backwards = HTcontrolfunc(1, -100)  # 后退
+    control_revolve = HTcontrolfunc(0, 0, 0, 1080)  # 原地旋转 180 度
 
-    # 左平移指令：
-    control_left = HTcontrolfunc(1, y=100)
+    # 实验一：前进 20s 后，左平移 2s，后退 20s
+    move(20, "forward", control_forwards.x, pub, control_forwards)
+    move(2, "left", control_left.y, pub, control_left)
+    move(22, "backward", control_backwards.x, pub, control_backwards)
 
-    # 后退指令：
-    control_backwards = HTcontrolfunc(1, -100)
-
-    # 原地旋转指令：(转 180 度)
-    control_revolve = HTcontrolfunc(0,0,4500,1080)
-
-    rospy.loginfo("实验一：前进 20s 后，左平移 2s，后退 20s\n")
-    pubMove(20, pub, control_forwards)
-    pubMove(2, pub, control_left)
-    pubMove(22, pub, control_backwards)
-
-    rospy.loginfo("实验二：前进 20s 后，原地旋转，继续前进20s\n")
-    pubMove(20, pub, control_forwards)
-    pubTurnAround(2, pub, control_revolve)
-    pubMove(20, pub, control_backwards)
+    # 实验二：前进 20s 后，原地旋转，继续前进20s
+    move(20, "forward", control_forwards.x, pub, control_forwards)
+    move(2, "rotate", control_revolve.z, pub, control_revolve)
+    move(20, "backward", control_backwards.x, pub, control_backwards)
