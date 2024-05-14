@@ -3,7 +3,7 @@ from ros_ht_msg.msg import ht_control
 from ros_ht_msg.msg import control
 
 # 创建HT控制消息
-def create_ht_control_msg(mode: int, x: int = 0, y: int = 0, z: int = 0) -> ht_control:
+def create_ht_control_msg(mode: int, x: int = 0, y: int = 0, z: int = 0):
     control_msg = ht_control()
     control_msg.mode = mode
     control_msg.x = x
@@ -11,7 +11,7 @@ def create_ht_control_msg(mode: int, x: int = 0, y: int = 0, z: int = 0) -> ht_c
     control_msg.z = z
     return control_msg
 
-def get_time(position: float, speed: float) -> int:
+def get_time(position, speed) -> int:
     """
     根据给定的位置和速度计算时间（单位：毫秒）。
     
